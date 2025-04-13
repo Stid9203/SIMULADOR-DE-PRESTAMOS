@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Préstamos con Abonos a Capital</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 2;
+            min-width: 300px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .summary {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .summary h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .summary p {
+            margin: 8px 0;
+        }
+        
+        .abono-section {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #c5e1f9;
+        }
+        
+        .abono-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .abono-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .abono-item:last-child {
+            border-bottom: none;
+        }
+        
+        .remove-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 5px 5px 5px;
+            background-color: white;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .comparison-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .savings {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .input-section, .results-section {
+                width: 100%;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Simulador de Préstamos con Abonos a Capital</h1>
+    
+    <div class="container">
+        <div class="input-section">
+            <div class="form-group">
+                <label for="monto">Monto del Préstamo ($)</label>
+                <input type="number" id="monto" min="1" step="any" value="10000000">
+            </div>
+            
+            <div class="form-group">
+                <label for="plazo">Plazo (meses)</label>
+                <input type="number" id="plazo" min="1" value="12">
+            </div>
+            
+            <div class="form-group">
+                <label for="tasa">Tasa de Interés Anual (%)</label>
+                <input type="number" id="tasa" min="0.1" step="0.1" value="25">
+            </div>
+            
+            <button onclick="calcularPrestamo()">Calcular Préstamo</button>
+            
+            <div class="abono-section">
+                <h3>Agregar Abonos a Capital</h3>
+                
+                <div class="form-group">
+                    <label for="abono-mes">Aplicar en el mes número</label>
+                    <input type="number" id="abono-mes" min="1" value="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="abono-monto">Monto del Abono ($)</label>
+                    <input type="number" id="abono-monto" min="1" step="any" value="500000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="abono-tipo">Tipo de Abono</label>
+                    <select id="abono-tipo">
+                        <option value="reducir-plazo">Reducir plazo (mantener cuota)</option>
+                        <option value="reducir-cuota">Reducir cuota (mantener plazo)</option>
+                    </select>
+                </div>
+                
+                <button onclick="agregarAbono()">Agregar Abono</button>
+                
+                <div class="abono-list" id="abono-list">
+                    <!-- Los abonos se agregarán aquí dinámicamente -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <div class="tabs">
+                <div class="tab active" onclick="cambiarTab(event, 'tab-original')">Plan Original</div>
+                <div class="tab" onclick="cambiarTab(event, 'tab-abonos')">Plan con Abonos</div>
+                <div class="tab" onclick="cambiarTab(event, 'tab-comparacion')">Comparación</div>
+            </div>
+            
+            <div id="tab-original" class="tab-content active">
+                <div class="summary" id="summary-original">
+                    <!-- Resumen del préstamo original -->
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="tabla-amortizacion-original">
+                        <thead>
+                            <tr>
+                                <th>N°</th>
+                                <th>Cuota</th>
+                                <th>Interés</th>
+                                <th>Capital</th>
+                                <th>Saldo Pendiente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Datos de amortización original -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="tab-abonos" class="tab-content">
+                <div class="summary" id="summary-abonos">
+                    <!-- Resumen del préstamo con abonos -->
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="tabla-amortizacion-abonos">
+                        <thead>
+                            <tr>
+                                <th>N°</th>
+                                <th>Cuota</th>
+                                <th>Interés</th>
+                                <th>Capital</th>
+                                <th>Abono</th>
+                                <th>Saldo Pendiente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Datos de amortización con abonos -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="tab-comparacion" class="tab-content">
+                <div class="summary" id="summary-comparacion">
+                    <!-- Resumen comparativo -->
+                </div>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Plan Original</th>
+                            <th>Plan con Abonos</th>
+                            <th>Diferencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-comparacion">
+                        <!-- Datos comparativos -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Arreglo para almacenar los abonos
+        let abonos = [];
+        
+        // Resultados calculados
+        let planOriginal = {};
+        let planConAbonos = {};
+        
+        // Función para calcular el préstamo
+        function calcularPrestamo() {
+            const monto = parseFloat(document.getElementById('monto').value);
+            const plazo = parseInt(document.getElementById('plazo').value);
+            const tasaAnual = parseFloat(document.getElementById('tasa').value);
+            
+            if (isNaN(monto) || isNaN(plazo) || isNaN(tasaAnual) || monto <= 0 || plazo <= 0 || tasaAnual <= 0) {
+                alert("Por favor, ingrese valores válidos y positivos.");
+                return;
+            }
+            
+            // Calcular el plan original primero
+            calcularPlanOriginal(monto, plazo, tasaAnual);
+            
+            // Luego calcular el plan con abonos
+            calcularPlanConAbonos(monto, plazo, tasaAnual, abonos);
+            
+            // Mostrar comparación
+            mostrarComparacion();
+            
+            // Mostrar la pestaña activa
+            document.querySelectorAll('.tab')[0].click();
+        }
+        
+        // Calcular el plan original
+        function calcularPlanOriginal(monto, plazo, tasaAnual) {
+            const tasaMensual = tasaAnual / 100 / 12;
+            const cuota = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / (Math.pow(1 + tasaMensual, plazo) - 1);
+            
+            const tabla = [];
+            let saldoPendiente = monto;
+            let totalIntereses = 0;
+            
+            for (let i = 1; i <= plazo; i++) {
+                const interes = saldoPendiente * tasaMensual;
+                const capital = cuota - interes;
+                saldoPendiente -= capital;
+                
+                totalIntereses += interes;
+                
+                // Ajuste del saldo pendiente para el último mes (evita errores de redondeo)
+                if (i === plazo) {
+                    saldoPendiente = 0;
+                }
+                
+                tabla.push({
+                    numero: i,
+                    cuota: cuota,
+                    interes: interes,
+                    capital: capital,
+                    saldo: saldoPendiente
+                });
+            }
+            
+            planOriginal = {
+                monto: monto,
+                plazo: plazo,
+                cuota: cuota,
+                totalIntereses: totalIntereses,
+                totalPagado: monto + totalIntereses,
+                tabla: tabla
+            };
+            
+            mostrarPlanOriginal();
+        }
+        
+        // Calcular plan con abonos
+        function calcularPlanConAbonos(monto, plazo, tasaAnual, abonos) {
+            const tasaMensual = tasaAnual / 100 / 12;
+            let cuota = monto * (tasaMensual * Math.pow(1 + tasaMensual, plazo)) / (Math.pow(1 + tasaMensual, plazo) - 1);
+            
+            const tabla = [];
+            let saldoPendiente = monto;
+            let totalIntereses = 0;
+            let totalAbonos = 0;
+            let plazoFinal = plazo;
+            let terminado = false;
+            
+            // Ordenar abonos por mes
+            const abonosOrdenados = [...abonos].sort((a, b) => a.mes - b.mes);
+            
+            for (let i = 1; i <= plazo && !terminado; i++) {
+                // Verificar si hay abonos para este mes
+                const abonosDelMes = abonosOrdenados.filter(abono => abono.mes === i);
+                let abonoTotal = 0;
+                
+                // Calcular la cuota normal
+                const interes = saldoPendiente * tasaMensual;
+                const capital = cuota - interes;
+                saldoPendiente -= capital;
+                
+                totalIntereses += interes;
+                
+                // Aplicar abonos si existen
+                if (abonosDelMes.length > 0) {
+                    for (const abono of abonosDelMes) {
+                        if (abono.monto > saldoPendiente) {
+                            abono.monto = saldoPendiente; // Ajustar si el abono es mayor que el saldo
+                        }
+                        
+                        abonoTotal += abono.monto;
+                        saldoPendiente -= abono.monto;
+                        totalAbonos += abono.monto;
+                        
+                        // Recalcular cuota si el tipo de abono es reducir-cuota
+                        if (abono.tipo === 'reducir-cuota' && saldoPendiente > 0) {
+                            cuota = saldoPendiente * (tasaMensual * Math.pow(1 + tasaMensual, plazo - i)) / (Math.pow(1 + tasaMensual, plazo - i) - 1);
+                        }
+                    }
+                }
+                
+                // Guardar fila de la tabla
+                tabla.push({
+                    numero: i,
+                    cuota: cuota,
+                    interes: interes,
+                    capital: capital,
+                    abono: abonoTotal,
+                    saldo: saldoPendiente
+                });
+                
+                // Si el saldo llega a 0 o es muy pequeño, terminar
+                if (saldoPendiente <= 0.01) {
+                    saldoPendiente = 0;
+                    plazoFinal = i;
+                    terminado = true;
+                }
+            }
+            
+            planConAbonos = {
+                monto: monto,
+                plazoOriginal: plazo,
+                plazoFinal: plazoFinal,
+                cuotaInicial: planOriginal.cuota,
+                cuotaFinal: cuota,
+                totalIntereses: totalIntereses,
+                totalAbonos: totalAbonos,
+                totalPagado: monto + totalIntereses,
+                tabla: tabla
+            };
+            
+            mostrarPlanConAbonos();
+        }
+        
+        // Mostrar el plan original en la tabla
+        function mostrarPlanOriginal() {
+            const tbody = document.querySelector('#tabla-amortizacion-original tbody');
+            tbody.innerHTML = '';
+            
+            planOriginal.tabla.forEach(fila => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${fila.numero}</td>
+                    <td>$${fila.cuota.toFixed(2)}</td>
+                    <td>$${fila.interes.toFixed(2)}</td>
+                    <td>$${fila.capital.toFixed(2)}</td>
+                    <td>$${fila.saldo.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Mostrar resumen
+            const summary = document.getElementById('summary-original');
+            summary.innerHTML = `
+                <h3>Resumen del Préstamo Original</h3>
+                <p><strong>Monto del Préstamo:</strong> $${planOriginal.monto.toFixed(2)}</p>
+                <p><strong>Plazo:</strong> ${planOriginal.plazo} meses</p>
+                <p><strong>Cuota Mensual:</strong> $${planOriginal.cuota.toFixed(2)}</p>
+                <p><strong>Total Intereses:</strong> $${planOriginal.totalIntereses.toFixed(2)}</p>
+                <p><strong>Total a Pagar:</strong> $${planOriginal.totalPagado.toFixed(2)}</p>
+            `;
+        }
+        
+        // Mostrar el plan con abonos en la tabla
+        function mostrarPlanConAbonos() {
+            const tbody = document.querySelector('#tabla-amortizacion-abonos tbody');
+            tbody.innerHTML = '';
+            
+            planConAbonos.tabla.forEach(fila => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${fila.numero}</td>
+                    <td>$${fila.cuota.toFixed(2)}</td>
+                    <td>$${fila.interes.toFixed(2)}</td>
+                    <td>$${fila.capital.toFixed(2)}</td>
+                    <td>$${fila.abono > 0 ? '$' + fila.abono.toFixed(2) : '-'}</td>
+                    <td>$${fila.saldo.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Mostrar resumen
+            const summary = document.getElementById('summary-abonos');
+            summary.innerHTML = `
+                <h3>Resumen del Préstamo con Abonos</h3>
+                <p><strong>Monto del Préstamo:</strong> $${planConAbonos.monto.toFixed(2)}</p>
+                <p><strong>Plazo Original:</strong> ${planConAbonos.plazoOriginal} meses</p>
+                <p><strong>Plazo Final:</strong> ${planConAbonos.plazoFinal} meses</p>
+                <p><strong>Cuota Inicial:</strong> $${planConAbonos.cuotaInicial.toFixed(2)}</p>
+                <p><strong>Cuota Final:</strong> $${planConAbonos.cuotaFinal.toFixed(2)}</p>
+                <p><strong>Total Abonos a Capital:</strong> $${planConAbonos.totalAbonos.toFixed(2)}</p>
+                <p><strong>Total Intereses:</strong> $${planConAbonos.totalIntereses.toFixed(2)}</p>
+                <p><strong>Total a Pagar:</strong> $${planConAbonos.totalPagado.toFixed(2)}</p>
+            `;
+        }
+        
+        // Mostrar comparación
+        function mostrarComparacion() {
+            if (!planOriginal.tabla || !planConAbonos.tabla) return;
+            
+            const ahorroPlazo = planOriginal.plazo - planConAbonos.plazoFinal;
+            const ahorroIntereses = planOriginal.totalIntereses - planConAbonos.totalIntereses;
+            // Calcular el total real pagado incluyendo abonos
+            const totalRealPagadoConAbonos = planConAbonos.totalPagado + planConAbonos.totalAbonos;
+            // Calcular el ahorro real (puede ser positivo o negativo)
+            const ahorroTotal = planOriginal.totalPagado - totalRealPagadoConAbonos;
+            
+            const tbody = document.getElementById('tabla-comparacion');
+            tbody.innerHTML = `
+                <tr>
+                    <td>Plazo (meses)</td>
+                    <td>${planOriginal.plazo}</td>
+                    <td>${planConAbonos.plazoFinal}</td>
+                    <td class="savings">${ahorroPlazo > 0 ? `-${ahorroPlazo}` : '0'}</td>
+                </tr>
+                <tr>
+                    <td>Cuota Mensual</td>
+                    <td>$${planOriginal.cuota.toFixed(2)}</td>
+                    <td>$${planConAbonos.cuotaFinal.toFixed(2)}</td>
+                    <td class="savings">${planOriginal.cuota > planConAbonos.cuotaFinal ? `-$${(planOriginal.cuota - planConAbonos.cuotaFinal).toFixed(2)}` : '$0.00'}</td>
+                </tr>
+                <tr>
+                    <td>Total Intereses</td>
+                    <td>$${planOriginal.totalIntereses.toFixed(2)}</td>
+                    <td>$${planConAbonos.totalIntereses.toFixed(2)}</td>
+                    <td class="savings">-$${ahorroIntereses.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td>Total Pagado</td>
+                    <td>$${planOriginal.totalPagado.toFixed(2)}</td>
+                    <td>$${totalRealPagadoConAbonos.toFixed(2)}</td>
+                    <td class="${ahorroTotal >= 0 ? 'savings' : ''}">${ahorroTotal >= 0 ? '-$' + ahorroTotal.toFixed(2) : '+$' + Math.abs(ahorroTotal).toFixed(2)}</td>
+                </tr>
+            `;
+            
+            // Resumen comparativo
+            const summary = document.getElementById('summary-comparacion');
+            summary.innerHTML = `
+                <h3>Impacto de los Abonos a Capital</h3>
+                <p><strong>Ahorro en Tiempo:</strong> ${ahorroPlazo > 0 ? `${ahorroPlazo} meses` : 'Sin reducción de plazo'}</p>
+                <p><strong>Ahorro en Intereses:</strong> $${ahorroIntereses.toFixed(2)}</p>
+                <p><strong>Total Abonos Realizados:</strong> $${planConAbonos.totalAbonos.toFixed(2)}</p>
+                <p><strong>Retorno de Inversión:</strong> ${((ahorroIntereses / planConAbonos.totalAbonos) * 100).toFixed(2)}%</p>
+            `;
+        }
+        
+        // Función para agregar un abono
+        function agregarAbono() {
+            const mes = parseInt(document.getElementById('abono-mes').value);
+            const monto = parseFloat(document.getElementById('abono-monto').value);
+            const tipo = document.getElementById('abono-tipo').value;
+            
+            if (isNaN(mes) || isNaN(monto) || mes <= 0 || monto <= 0) {
+                alert("Por favor, ingrese valores válidos y positivos.");
+                return;
+            }
+            
+            // Verificar que el mes no supere el plazo
+            const plazo = parseInt(document.getElementById('plazo').value);
+            if (mes > plazo) {
+                alert(`El mes del abono no puede ser mayor que el plazo del préstamo (${plazo} meses).`);
+                return;
+            }
+            
+            // Agregar el abono al arreglo
+            const id = Date.now(); // ID único para el abono
+            abonos.push({ id, mes, monto, tipo });
+            
+            // Actualizar la lista visual de abonos
+            actualizarListaAbonos();
+            
+            // Recalcular si ya hay un préstamo calculado
+            if (planOriginal.tabla && planOriginal.tabla.length > 0) {
+                calcularPrestamo();
+            }
+        }
+        
+        // Función para actualizar la lista visual de abonos
+        function actualizarListaAbonos() {
+            const listaAbonos = document.getElementById('abono-list');
+            listaAbonos.innerHTML = '';
+            
+            // Ordenar abonos por mes
+            const abonosOrdenados = [...abonos].sort((a, b) => a.mes - b.mes);
+            
+            abonosOrdenados.forEach(abono => {
+                const div = document.createElement('div');
+                div.className = 'abono-item';
+                div.innerHTML = `
+                    <span>Mes ${abono.mes}: $${abono.monto.toFixed(2)} (${abono.tipo === 'reducir-plazo' ? 'Reducir plazo' : 'Reducir cuota'})</span>
+                    <button class="remove-btn" onclick="eliminarAbono(${abono.id})">X</button>
+                `;
+                listaAbonos.appendChild(div);
+            });
+        }
+        
+        // Función para eliminar un abono
+        function eliminarAbono(id) {
+            abonos = abonos.filter(abono => abono.id !== id);
+            actualizarListaAbonos();
+            
+            // Recalcular si ya hay un préstamo calculado
+            if (planOriginal.tabla && planOriginal.tabla.length > 0) {
+                calcularPrestamo();
+            }
+        }
+        
+        // Función para cambiar de pestaña
+        function cambiarTab(event, tabId) {
+            // Ocultar todos los contenidos de las pestañas
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar el contenido de la pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            
+            // Cambiar el estado activo de las pestañas
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Marcar la pestaña seleccionada como activa
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar con valores predeterminados
+            calcularPrestamo();
+        });
+    </script>
+</body>
+</html>
